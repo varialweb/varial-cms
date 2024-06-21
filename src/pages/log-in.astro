@@ -1,0 +1,18 @@
+---
+import '../tailwind.css';
+import Logo from '../components/Logo.astro'
+import LoginForm from "../components/auth/LoginForm.svelte";
+import { ViewTransitions, slide } from 'astro:transitions';
+---
+
+<html lang="en">
+  <head>
+    <title>Login - VarialCMS</title>
+    <!-- <ViewTransitions transition:animate="slide" /> -->
+  </head>
+  <body class="w-full h-screen flex flex-col items-center justify-center gap-4" transition:animate="slide">
+    <Logo styles="text-5xl mb-4" transition:persist />
+    <LoginForm client:load />
+    <p>Don't have an account? <a href="/create-account">Create new account</a></p>
+  </body>
+</html>

@@ -1,0 +1,26 @@
+---
+import '../tailwind.css';
+import Logo from '../components/Logo.astro'
+import CreateAccountForm from '../components/auth/CreateAccountForm.svelte';
+
+if (Astro.request.method === 'POST') {
+  const form = await Astro.request.formData()
+  const email = form.get('email')
+  
+
+
+
+  return new Response(JSON.stringify({ message: 'from astro component!' }))
+}
+---
+
+<html lang="en">
+  <head>
+    <title>Create Account - VarialCMS</title>
+  </head>
+  <body class="w-full h-screen flex flex-col items-center justify-center gap-4">
+    <Logo styles="text-5xl mb-4" />
+     <CreateAccountForm client:load />
+    <p>Already have an account? <a href="/login">Log in</a></p>
+  </body>
+</html>

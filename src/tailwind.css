@@ -1,0 +1,40 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body { @apply bg-cms-white text-cms-black; }
+  h1, h2, h3, h4, h5, h6 { @apply font-bold; }
+  h1 { @apply text-4xl; }
+  h2 { @apply text-3xl; }
+  h3 { @apply text-2xl; }
+  h4 { @apply text-xl; }
+  h5 { @apply text-lg; }
+  h6 { @apply text-base; }
+
+  label {
+    @apply flex flex-col gap-0 font-medium text-sm text-cms-green-600;
+  }
+
+  input {
+    @apply bg-cms-gray-50  border border-gray-300 rounded focus:outline-cms-green-300 py-1.5 px-1.5 text-base text-cms-black w-full; 
+  }
+
+  form button {
+    @apply action-button disabled:bg-cms-green-300 disabled:shadow-none;
+  }
+
+  a {
+    @apply text-cms-blue-400 font-medium;
+  }
+}
+
+@layer components {
+  .action-button {
+    @apply bg-cms-green-500 text-cms-white px-4 py-3 rounded font-medium leading-none shadow flex justify-center items-center gap-2;
+  }
+
+  .action-button img {
+    @apply h-4;
+  }
+}
