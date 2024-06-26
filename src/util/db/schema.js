@@ -3,8 +3,8 @@ import { integer, sqliteTable, text } from "drizzle-orm/sqlite-core";
 
 export const roles = sqliteTable('roles', {
   id: integer('id', { mode: 'number' }).primaryKey({ autoIncrement: true }),
-  name: text('name').notNull().unique(),
-  order: integer('order', { mode: 'number' }).unique().notNull(),
+  name: text('name').unique(),
+  order: integer('order', { mode: 'number' }).unique(),
   permissions: text('permissions', { mode: 'json' }),
   createdAt: integer('created_at', { mode: 'timestamp' }).default(new Date(Date.now())),
   updatedAt: integer('updated_at', { mode: 'timestamp' }).default(new Date(Date.now())),
@@ -13,7 +13,7 @@ export const roles = sqliteTable('roles', {
 export const users = sqliteTable('users', {
   id: integer('id', { mode: 'number' }).primaryKey({ autoIncrement: true }),
   name: text('name'),
-  role: integer('role'),
+  role: integer('role').references(() => roles.id),
   email: text('email'),
   password: text('password'),
   salt: text('salt'),
@@ -22,6 +22,7 @@ export const users = sqliteTable('users', {
   createdAt: integer('created_at', { mode: 'timestamp' }).default(new Date(Date.now())),
   updatedAt: integer('updated_at', { mode: 'timestamp' }).default(new Date(Date.now())),
 })
+
 
 export const settings = sqliteTable('settings', {
   id: integer('id', { mode: 'number' }).primaryKey({ autoIncrement: true }),
@@ -41,10 +42,6 @@ export const contentModels = sqliteTable('content_models', {
   updatedAt: integer('updated_at', { mode: 'timestamp' }).default(new Date(Date.now())),
 })
 
-export const contentModelsRelations = relations(contentModels, ({ many }) => ({
-  contents: many(contents),
-}))
-
 export const contents = sqliteTable('contents', {
   id: integer('id', { mode: 'number' }).primaryKey({ autoIncrement: true }),
   contentModel: integer('content_model').references(() => contentModels.id),
@@ -54,10 +51,6 @@ export const contents = sqliteTable('contents', {
   createdAt: integer('created_at', { mode: 'timestamp' }).default(new Date(Date.now())),
   updatedAt: integer('updated_at', { mode: 'timestamp' }).default(new Date(Date.now())),
 })
-
-export const contentsRelations = relations(contents, ({ one }) => ({
-  contentModel: one(contentModels),
-}))
 
 export const mailingLists = sqliteTable('mailing_lists', {
   id: integer('id', { mode: 'number' }).primaryKey({ autoIncrement: true }),

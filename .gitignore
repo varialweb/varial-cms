@@ -23,4 +23,8 @@ pnpm-debug.log*
 # jetbrains setting folder
 .idea/
 
-.drizzle/
+# drizzle orm folder
+drizzle/
+
+# vs code settings
+.vscode/
