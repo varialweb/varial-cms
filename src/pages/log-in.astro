@@ -3,6 +3,68 @@ import '../tailwind.css';
 import Logo from '../components/Logo.astro'
 import LoginForm from "../components/auth/LoginForm.svelte";
 import { ViewTransitions, slide } from 'astro:transitions';
+import { createClient } from '@libsql/client';
+import { drizzle } from 'drizzle-orm/libsql';
+import { users } from '../util/db/schema';
+import { eq } from 'drizzle-orm';
+import crypto from 'crypto'
+import { lucia } from '../util/auth/auth';
+
+if (Astro.request.method === 'POST') {
+  const form = await Astro.request.formData()
+  const email = form.get('email')
+  const password = form.get('password')
+
+  if (password.toString().length < 8) {
+    return new Response(
+      JSON.stringify({
+        messages: {
+          password: 'Password not long enough'
+        }
+      })
+    )
+  }
+
+  const client = createClient({ url: import.meta.env.SQLITE_URL, authToken: import.meta.env.SQLITE_TOKEN });
+  const db = drizzle(client);
+
+  const user = await db.select().from(users).where(eq(users.email, email.toString())).limit(1)
+
+  if (!user[0]) {
+    return new Response(
+      JSON.stringify({
+        messages: {
+          error: 'Invalid email and/or password'
+        }
+      })
+    )
+  }
+
+  const saltedPassword = crypto.scryptSync(password.toString(), user[0].salt, 64).toString('hex')
+
+  if (saltedPassword !== user[0].password) {
+    return new Response(
+      JSON.stringify({
+        messages: {
+          error: 'Invalid email and/or password'
+        }
+      })
+    )
+  }
+
+  const session = await lucia.createSession(user[0].id.toString(), {
+    avatar: user[0].avatar,
+  })
+  const sessionCookie = lucia.createSessionCookie(session.id)
+
+  Astro.cookies.set(sessionCookie.name, sessionCookie.value, sessionCookie.attributes)
+
+  return new Response(
+    JSON.stringify({
+      success: true,
+    })
+  )
+}
 ---
 
 <html lang="en">

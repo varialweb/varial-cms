@@ -25,13 +25,17 @@
     console.log('response', response)
 
     if (response.messages) messages = {...response.messages}
-
+    if (response.success) location.href = '/'
     loading = false
   }
 </script>
 
 <form on:submit={handleSubmit} class="border border-cms-green-50 p-8 rounded shadow grid gap-4 w-full max-w-md">
   <h1 class="text-center">Create Account</h1>
+  <label for="name">
+    Name
+    <input id="name" name="name" placeholder="John Smith" required />
+  </label>
   <label for="email">
     <span class="flex justify-between items-center">
       Email {#if messages.email}<span class="text-sm text-red-600">{messages.email}</span>{/if}

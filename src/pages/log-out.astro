@@ -1,0 +1,15 @@
+---
+import { lucia } from "../util/auth/auth";
+
+// @ts-ignore
+if (!Astro.locals.session) {
+	return Astro.redirect('/log-in')
+}
+
+// @ts-ignore
+await lucia.invalidateSession(Astro.locals.session.id);
+const sessionCookie = lucia.createBlankSessionCookie();
+Astro.cookies.set(sessionCookie.name, sessionCookie.value, sessionCookie.attributes)
+
+return Astro.redirect('/log-in')
+---

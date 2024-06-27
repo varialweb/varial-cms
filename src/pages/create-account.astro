@@ -2,15 +2,78 @@
 import '../tailwind.css';
 import Logo from '../components/Logo.astro'
 import CreateAccountForm from '../components/auth/CreateAccountForm.svelte';
+import { createClient } from '@libsql/client';
+import { drizzle } from 'drizzle-orm/libsql';
+import { settings, users } from '../util/db/schema';
+import { eq } from 'drizzle-orm';
+import crypto from 'crypto'
+import { lucia } from '../util/auth/auth'
 
 if (Astro.request.method === 'POST') {
   const form = await Astro.request.formData()
+  const name = form.get('name')
   const email = form.get('email')
+  const password = form.get('password')
+  const confirmPassword = form.get('confirm-password')
+
+  if (typeof email !== 'string') {
+    return new Response(JSON.stringify({ messages: { email: 'Invalid email' }}))
+  }
+
+  if (password !== confirmPassword) return new Response(JSON.stringify({ messages: { password: 'Passwords don\'t match' } }))
+
+  if (password.toString().length < 8 || confirmPassword.toString().length < 8) {
+    return new Response(JSON.stringify({
+      messages: {
+        password: 'Password too short'
+      }
+    }))
+  }
+
+  const client = createClient({ url: import.meta.env.SQLITE_URL, authToken: import.meta.env.SQLITE_TOKEN });
+  const db = drizzle(client);
   
+  const userExists = await db.select({ email: users.email }).from(users).where(eq(users.email, email.toString())).limit(1)
+
+  if (userExists[0]) {
+    return new Response(
+      JSON.stringify({
+        messages: {
+          email: 'Email already in use',
+        }
+      })
+    )
+  }
+
+  const defaultRole = await db.select().from(settings).where(eq(settings.name, 'role-settings'))
+  const salt = crypto.randomBytes(64).toString('hex')
+  const saltedPassword = crypto.scryptSync(password.toString(), salt, 64).toString('hex')
+
+  let user = await db.insert(users).values({
+    // @ts-ignore
+    role: defaultRole[0].value.defaultRole, 
+    name: name.toString(),
+    email: email.toString(),
+    password: saltedPassword,
+    salt: salt,
+    avatar: '',
+  })
+  .returning()
+  // .onConflictDoNothing({ target: users.email })
+
+  console.log('USER', user)
 
 
+  const session = await lucia.createSession(user[0].id.toString(), {})
+  const sessionCookie = lucia.createSessionCookie(session.id)
 
-  return new Response(JSON.stringify({ message: 'from astro component!' }))
+  Astro.cookies.set(sessionCookie.name, sessionCookie.value, sessionCookie.attributes)
+
+  return new Response(
+    JSON.stringify({
+      success: true,
+    })
+  )
 }
 ---
 
