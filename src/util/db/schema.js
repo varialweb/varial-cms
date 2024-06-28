@@ -16,7 +16,6 @@ export const users = sqliteTable('users', {
   email: text('email').unique(),
   password: text('password'),
   salt: text('salt'),
-  authToken: text('auth_token'),
   avatar: text('avatar'),
   createdAt: integer('created_at', { mode: 'timestamp' }).default(new Date()),
   updatedAt: integer('updated_at', { mode: 'timestamp' }).default(new Date()),

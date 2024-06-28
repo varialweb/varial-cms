@@ -18,17 +18,19 @@ export const onRequest = defineMiddleware(async (context, next) => {
   const { session, user } = await lucia.validateSession(sessionId);
   
 
-  const client = createClient({ url: import.meta.env.SQLITE_URL, authToken: import.meta.env.SQLITE_TOKEN });
-  const db = drizzle(client);
-
-  const role = (await db.select().from(roles).where(eq(roles.id, user.role)).limit(1))[0]
-
-  context.locals.user = {
-    ...user,
-    role: role,
+  
+  
+  if (user) {
+    const client = createClient({ url: import.meta.env.SQLITE_URL, authToken: import.meta.env.SQLITE_TOKEN });
+    const db = drizzle(client);
+    const role = (await db.select().from(roles).where(eq(roles.id, user.role)).limit(1))[0]
+    context.locals.user = {
+      ...user,
+      role: role,
+    }
   }
   context.locals.session = session
-  // console.log('session', session)
+  console.log('session', session)
   // console.log('user', user)
   
 
